@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<style type="text/css">
+*{
+	margin: 0px;
+	padding: 0px;
+}
+	#div1{ width:100px; height:100px; background:red; position:absolute;}
+#div2{ width:100px; height:100px; background:yellow; position:absolute; left:100px;}
+#div3{ width:100px; height:100px; background:blue; position:absolute; left:200px;}
+#div4{ width:100px; height:100px; background:green; position:absolute; left:300px;}
+
+</style>
+<body>
+	<div id="div1"></div>
+	<div id="div2"></div>
+	<div id="div3"></div>
+	<div id="div4"></div>
+</body>
+</html>
+<script type="text/javascript">
+//普通的拖拽
+/*	window.onload=function(){
+		var odiv1 =document.getElementById("div1");
+		var disY=0;
+		var disX=0;
+		odiv1.onmousedown=function(ev){
+			var ev = ev || window.event;
+			disX =ev.clientX - odiv1.offsetLeft;
+			disY =ev.clientY - odiv1.offsetTop;
+			document.onmousemove=function(ev){
+				var ev = ev || window.event;
+				odiv1.style.left=ev.clientX-disX+'px';
+				odiv1.style.top=ev.clientY-disY+'px';
+			}
+			document.onmouseup=function(){
+				document.onmousemove = null;
+			document.onmouseup = null;
+
+			}
+			return false;
+		}
+	}*/
+	//面向对象的拖拽
+	//第一步把普通拖拽变形
+	/*var odiv=null;
+	var disX=0;
+	var disY=0;
+	window.onload=function(){
+		 odiv =document.getElementById("div1");
+		init();
+	}
+
+	function init(){
+		odiv.onmousedown=fndown;
+	}
+	function fndown(ev){
+			var ev = ev || window.event;
+		disX =ev.clientX - odiv.offsetLeft;
+		disY =ev.clientY - odiv.offsetTop;
+		document.onmousemove= fnmove; 
+		document.onmouseup= fnup; 
+		return false;
+	}
+	function fnmove(ev){
+			var ev = ev || window.event;
+			odiv.style.left=ev.clientX-disX+'px';
+			odiv.style.top=ev.clientY-disY+'px';
+	}
+	function fnup(){
+				document.onmousemove = null;
+	}			document.onmouseup = null;*/
+	//第2步
+/*	window.onload=function(){
+		var d1 = new drag('div1');
+		d1.init();
+	}
+	function drag(id){
+		this.odiv =document.getElementById(id);
+		this.disX=0;
+		this.disY=0;
+	}
+	drag.prototype.init=function(){
+		var This=this;
+		this.odiv.onmousedown=function(ev){
+				var ev = ev || window.event;
+				This.fndown(ev);
+				return false;
+		}
+	}
+	drag.prototype.fndown=function(ev){
+		var This =this;
+		this.disX =ev.clientX - this.odiv.offsetLeft;
+		this.disY =ev.clientY - this.odiv.offsetTop;
+		document.onmousemove=function(ev){
+			var ev = ev || window.event;
+			This.fnmove(ev);
+
+		}
+		document.onmouseup= this.fnup; 
+		return false;
+	}
+	drag.prototype.fnmove =function(ev){
+			this.odiv.style.left=ev.clientX-this.disX+'px';
+			this.odiv.style.top=ev.clientY-this.disY+'px';
+	}
+	drag.prototype.fnup=function(){
+		document.onmousemove = null;
+	document.onmouseup = null;
+
+	}*/
+	//拖拽的组件开发
+	//利用的是拷贝继承的方式来实现
+
+	window.onload=function(){
+		var d1 = new drag();
+		d1.init({    //配置参数
+			id : 'div1'
+		});
+	
+		var d2 = new drag();
+		d2.init({   //配置参数
+			id : 'div2',
+			toDown : function(){
+				document.title = 'hello';
+				document.body.style.background = 'black';
+			}
+		});
+	
+		var d3 = new drag();
+		d3.init({    //配置参数
+			id : 'div3',
+			toDown : function(){
+				document.title = '妙味';
+			},
+			toUp : function(){
+				document.title = '课堂';
+			}
+		});
+		
+		var d4 = new drag();
+		d4.init({    //配置参数
+			id : 'div4',
+			toUp : function(){
+				document.title = 'beybye';
+			}
+		});
+
+}
+
+
+function drag(){
+	this.obj =null;
+	this.disY=0;
+	this.disX=0;
+	this.settings = {   //默认参数
+		toDown : function(){},
+		toUp : function(){}
+	};
+
+}
+drag.prototype.init=function(option){
+	var This =this;
+	this.obj=document.getElementById(option.id);
+	extend(this.settings,option);
+
+	this.obj.onmousedown=function(ev){
+
+		var ev = ev || window.event;
+				This.fndown(ev);
+				This.settings.toDown();
+				document.onmousemove = function(ev){
+					var ev = ev || window.event;
+					This.fnmove(ev);
+				};
+				document.onmouseup = function(){
+					This.fnup();
+					
+					This.settings.toUp();
+					
+				};
+
+				return false;
+
+	}
+}
+drag.prototype.fndown=function(ev){
+	this.disX =ev.clientX - this.obj.offsetLeft;
+		this.disY =ev.clientY - this.obj.offsetTop;
+}
+drag.prototype.fnmove =function(ev){
+	this.obj.style.left=ev.clientX-this.disX+'px';
+	this.obj.style.top=ev.clientY-this.disY+'px';
+}
+drag.prototype.fnup=function(){
+	document.onmousemove = null;
+	document.onmouseup = null;
+
+}
+
+
+
+function extend(obj1,obj2){
+
+	for(var attr in obj2){
+		obj1[attr] = obj2[attr];
+	}
+}
+
+</script>
